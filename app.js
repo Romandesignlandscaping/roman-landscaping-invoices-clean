@@ -1230,11 +1230,11 @@ async function generateInvoicePdf(invoice, { download = true, doc = null, addPag
 
   const logoProps = localDoc.getImageProperties(headerLogo);
   const logoRatio = logoProps.width / logoProps.height;
-  const logoWidth = 250;
+  const logoWidth = 168;
   const logoHeight = logoWidth / logoRatio;
-  let y = 22;
+  let y = 10;
   localDoc.addImage(headerLogo, 'PNG', pageWidth / 2 - logoWidth / 2, y, logoWidth, logoHeight, undefined, 'FAST');
-  y += logoHeight + 18;
+  y += logoHeight + 12;
 
   const colWidths = [contentWidth * 0.28, contentWidth * 0.44, contentWidth * 0.28];
   const rowHeight = 20;
@@ -1245,19 +1245,19 @@ async function generateInvoicePdf(invoice, { download = true, doc = null, addPag
     const width = colWidths[index];
     localDoc.rect(x, y, width, rowHeight);
     localDoc.setFont('helvetica', 'bold');
-    localDoc.setFontSize(11);
+    localDoc.setFontSize(10.5);
     localDoc.text(String(cell || ''), x + 8, y + 14);
     x += width;
   });
-  y += rowHeight + 28;
+  y += rowHeight + 24;
 
   localDoc.setTextColor(0, 104, 84);
   localDoc.setFont('helvetica', 'bold');
   localDoc.setFontSize(12);
-  localDoc.text(`DATE: ${displayDate}`, margin + 120, y);
-  const maxDescWidth = pageWidth - (margin + 250) - margin;
+  localDoc.text(`DATE: ${displayDate}`, margin + 160, y);
+  const maxDescWidth = pageWidth - (margin + 290) - margin;
   const desc = localDoc.splitTextToSize(`DESCRIPTION: ${descriptionText}`, maxDescWidth)[0] || 'DESCRIPTION:';
-  localDoc.text(desc, margin + 250, y);
+  localDoc.text(desc, margin + 290, y);
   y += 12;
   localDoc.setDrawColor(48, 48, 48);
   localDoc.line(margin + 58, y, pageWidth - margin - 58, y);
@@ -1266,10 +1266,10 @@ async function generateInvoicePdf(invoice, { download = true, doc = null, addPag
   localDoc.setTextColor(0,0,0);
   localDoc.setFont('helvetica','normal');
   localDoc.setFontSize(12);
-  const numX = margin + 20;
-  const textX = margin + 46;
-  const amountX = pageWidth - margin;
-  const textWidth = amountX - textX - 90;
+  const numX = margin + 16;
+  const textX = margin + 44;
+  const amountX = pageWidth - margin - 26;
+  const textWidth = amountX - textX - 86;
   for (let i = 0; i < bodyItems.length; i++) {
     const item = bodyItems[i];
     const lines = localDoc.splitTextToSize(item.name || '', textWidth);
@@ -1291,23 +1291,15 @@ async function generateInvoicePdf(invoice, { download = true, doc = null, addPag
   const total = subtotal + tax;
   y += 6;
   localDoc.line(margin + 58, y, pageWidth - margin - 58, y);
-  y += 18;
-  localDoc.setFont('helvetica','normal');
+  y += 14;
   localDoc.setFontSize(10.5);
-  const subtotalText = `Subtotal: ${money(subtotal)}`;
-  const taxText = `Tax: ${money(tax)}`;
-  const totalText = `Total: ${money(total)}`;
-  const totalW = localDoc.getTextWidth(totalText);
-  const taxW = localDoc.getTextWidth(taxText);
-  const subtotalW = localDoc.getTextWidth(subtotalText);
-  const totalX = pageWidth - margin - totalW;
-  const taxX = totalX - 24 - taxW;
-  const subtotalX = taxX - 24 - subtotalW;
-  localDoc.text(subtotalText, subtotalX, y);
-  localDoc.text(taxText, taxX, y);
+  const summaryX = amountX - 140;
+  localDoc.setFont('helvetica','normal');
+  localDoc.text(`Subtotal: ${money(subtotal)}`, summaryX, y, { align: 'left' });
+  localDoc.text(`Tax: ${money(tax)}`, summaryX + 108, y, { align: 'left' });
   localDoc.setFont('helvetica','bold');
-  localDoc.text(totalText, totalX, y);
-  y += 18;
+  localDoc.text(`Total: ${money(total)}`, summaryX + 164, y, { align: 'left' });
+  y += 22;
 
   if (paymentNote) {
     localDoc.setTextColor(210, 20, 20);
